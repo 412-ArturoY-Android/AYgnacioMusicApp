@@ -26,12 +26,16 @@ import com.example.aygnaciomusicapp.ui.theme.TextDark
 fun DetailScreen(albumId: String, onBackClick: () -> Unit) {
     var detail by remember { mutableStateOf<AlbumDetailDto?>(null) }
     var isLoading by remember { mutableStateOf(true) }
+    var errorMessage by remember { mutableStateOf<String?>(null) }
 
     LaunchedEffect(albumId) {
         try {
+            isLoading = true
+            errorMessage = null
             detail = RetrofitClient.apiService.getAlbumDetail(albumId)
         } catch (e: Exception) {
             e.printStackTrace()
+            errorMessage = e.localizedMessage ?: "Error desconocido en la API"
         } finally {
             isLoading = false
         }
@@ -40,6 +44,18 @@ fun DetailScreen(albumId: String, onBackClick: () -> Unit) {
     Box(modifier = Modifier.fillMaxSize().background(PurpleBackground)) {
         if (isLoading) {
             CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
+        } else if (errorMessage != null) {
+            Column(
+                modifier = Modifier.fillMaxSize().padding(24.dp),
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Text("Error al cargar el detalle", fontWeight = FontWeight.Bold, color = Color.Red)
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(errorMessage!!, style = MaterialTheme.typography.bodySmall)
+                Spacer(modifier = Modifier.height(16.dp))
+                Button(onClick = onBackClick) { Text("Regresar") }
+            }
         } else {
             detail?.let { album ->
                 LazyColumn(
@@ -54,7 +70,10 @@ fun DetailScreen(albumId: String, onBackClick: () -> Unit) {
                                 modifier = Modifier.fillMaxSize().clip(RoundedCornerShape(bottomStart = 32.dp, bottomEnd = 32.dp)),
                                 contentScale = ContentScale.Crop
                             )
-                            IconButton(onClick = onBackClick, modifier = Modifier.padding(16.dp).background(Color.Black.copy(alpha = 0.4f), RoundedCornerShape(50))) {
+                            IconButton(
+                                onClick = onBackClick,
+                                modifier = Modifier.padding(16.dp).background(Color.Black.copy(alpha = 0.4f), RoundedCornerShape(50))
+                            ) {
                                 Icon(Icons.Default.ArrowBack, contentDescription = "Atrás", tint = Color.White)
                             }
                         }
@@ -69,21 +88,27 @@ fun DetailScreen(albumId: String, onBackClick: () -> Unit) {
                             Column(modifier = Modifier.padding(16.dp)) {
                                 Text("About this album", style = MaterialTheme.typography.titleMedium, color = TextDark, fontWeight = FontWeight.Bold)
                                 Spacer(modifier = Modifier.height(8.dp))
-                                Text(album.description, style = MaterialTheme.typography.bodyMedium)
+                                album.description?.let { Text(it, style = MaterialTheme.typography.bodyMedium) }
                             }
                         }
                     }
 
-                    items(album.tracks) { track ->
-                        Card(
-                            modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 4.dp),
-                            shape = RoundedCornerShape(12.dp),
-                            colors = CardDefaults.cardColors(containerColor = Color.White)
-                        ) {
-                            Row(modifier = Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
-                                Column {
-                                    Text(track.title, style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.Bold)
-                                    Text(album.artist, style = MaterialTheme.typography.bodySmall, color = Color.Gray)
+                    if (album.tracks.isEmpty()) {
+                        item {
+                            Text("No hay canciones disponibles en este álbum", modifier = Modifier.padding(16.dp), color = Color.Gray)
+                        }
+                    } else {
+                        items(album.tracks) { track ->
+                            Card(
+                                modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 4.dp),
+                                shape = RoundedCornerShape(12.dp),
+                                colors = CardDefaults.cardColors(containerColor = Color.White)
+                            ) {
+                                Row(modifier = Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
+                                    Column {
+                                        Text(track.title, style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.Bold)
+                                        album.artist?.let { Text(it, style = MaterialTheme.typography.bodySmall, color = Color.Gray) }
+                                    }
                                 }
                             }
                         }
