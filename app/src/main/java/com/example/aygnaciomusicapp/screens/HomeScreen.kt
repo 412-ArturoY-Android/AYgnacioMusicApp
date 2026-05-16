@@ -103,7 +103,7 @@ fun HomeScreen(onAlbumClick: (String) -> Unit) {
                             text = "See more",
                             style = MaterialTheme.typography.bodyMedium,
                             color = Color(0xFF8A56FF),
-                            modifier = Modifier.clickable { /* Acción opcional */ }
+                            modifier = Modifier.clickable {  }
                         )
                     }
                 }
