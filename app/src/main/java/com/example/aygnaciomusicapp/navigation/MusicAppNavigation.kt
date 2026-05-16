@@ -5,6 +5,8 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
+import com.example.aygnaciomusicapp.screens.DetailScreen
+import com.example.aygnaciomusicapp.screens.HomeScreen
 
 @Composable
 fun MusicAppNavigation() {
@@ -22,22 +24,11 @@ fun MusicAppNavigation() {
             )
         }
         composable<DetailDestination> { backStackEntry ->
-            // Obtenemos los argumentos de forma segura
-            val detailArgs = backStackEntry.toRoute<DetailDestination>()
+            val args = backStackEntry.toRoute<DetailDestination>()
             DetailScreen(
-                albumId = detailArgs.albumId,
+                albumId = args.albumId,
                 onBackClick = { navController.popBackStack() }
             )
         }
     }
-}
-
-@Composable
-fun HomeScreen(onAlbumClick: (ERROR) -> Unit) {
-    TODO("Not yet implemented")
-}
-
-@Composable
-fun DetailScreen(albumId: String, onBackClick: () -> Boolean) {
-    TODO("Not yet implemented")
 }
